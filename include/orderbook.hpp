@@ -17,8 +17,14 @@ class Orderbook {
 private:
     using ExchangeOrderMap = std::unordered_map<std::string, std::unordered_map<double, double>>;
 
+    using Price = double;
+    using Volume = double;
+
     static constexpr size_t MAX_LEVELS = 10000;
     static constexpr size_t TOP_LEVELS = 5;
+
+    std::vector<std::pair<Price, Volume>> bids;
+    std::vector<std::pair<Price, Volume>> asks;
 
     std::map<double, double, std::greater<double>> bids_;
     std::map<double, double> asks_;
@@ -26,48 +32,41 @@ private:
     ExchangeOrderMap exchange_bids_;
     ExchangeOrderMap exchange_asks_;
 
-    std::vector<int> client_send_list_;
-    bool top_levels_updated_ = false;
-
     uint32_t currency_id_;
 
     template <typename T>
     void rebalance(T& orders_map);
 
     template <typename T>
-    void update_level(const std::string& exchange_id, double price, double new_volume,
+    void update_level(const std::string& exchange_id, Price price, Volume new_volume,
                     T& orders_map, ExchangeOrderMap& exchanges);
 
     template <typename T>
-    void delete_level(const std::string& exchange_id, double price,
+    void delete_level(const std::string& exchange_id, Price price,
                     T& orders_map, ExchangeOrderMap& exchanges);
 
-    double get_total_volume_at_price(double price, 
+    double get_total_volume_at_price(Price price, 
                                 const ExchangeOrderMap& exchanges) const;
 
-    void send_snapshot();
     void ToNetworkOrder(double value, char* buffer);
 
     template <typename T, typename Compare>
-    bool IsInFirstNKeys(T& orders_map, double price, Compare comp);
+    bool IsInFirstNKeys(T& orders_map, Price price, Compare comp);
 
 public:
     Orderbook(int currency_id);
 
-    void update_bid(const std::string &exchange_id, double price, double new_volume);
-    void update_ask(const std::string &exchange_id, double price, double new_volume);
+    void update_bid(const std::string &exchange_id, Price price, Volume new_volume);
+    void update_ask(const std::string &exchange_id, Price price, Volume new_volume);
 
     void print_bbo(); 
     size_t get_max_levels() const;
 
-    double get_exchange_bid_volume(const std::string& exchange_id, double price) const;
-    double get_exchange_ask_volume(const std::string& exchange_id, double price) const;
+    double get_exchange_bid_volume(const std::string& exchange_id, Price price) const;
+    double get_exchange_ask_volume(const std::string& exchange_id, Price price) const;
 
     void initialize_exchange(const std::string& exchange_id);
-
-
-    void add_client(int client_socket);
-    void remove_client(int client_socket);
+    void send_snapshot(int client_socket, int n_levels);
 };
 
 #endif  // ORDERBOOK_HPP

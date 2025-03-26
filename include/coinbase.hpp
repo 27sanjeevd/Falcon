@@ -17,11 +17,13 @@ public:
 
     std::optional<std::string> ReturnRequest(const std::string &url) override;
 
+    /*
     std::optional<BBO> ReturnBBO(const std::string &ticker) override;
 
     std::optional<Latest_Trade> ReturnLastTrade(const std::string &ticker) override;
 
     std::optional<Orderbook_State> ReturnCurrentOrderbook(const std::string &ticker, int max_levels) override;
+    */
 
     std::optional<std::string> get_asset_name_conversion(const std::string &name) override;
 

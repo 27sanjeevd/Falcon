@@ -1,5 +1,6 @@
 #include "../include/corecomponent.hpp"
 #include "../include/websocket.hpp"
+#include "../include/data.hpp"
 
 #include <thread>
 #include <sys/socket.h>
@@ -79,15 +80,6 @@ void CoreComponent::ReceiveConnections() {
 }
 
 
-#pragma pack(1)
-struct ReceivedData {
-    uint32_t message_type;
-    uint32_t currency_name;
-    uint32_t num_levels;
-};
-#pragma pack()
-
-
 void CoreComponent::ConnectionHandler(int client_socket) {
     std::cout << "in thread waiting for client\n";
 
@@ -110,7 +102,7 @@ void CoreComponent::ConnectionHandler(int client_socket) {
 
         uint32_t return_code = ProcessRequest(socket_buffer, client_socket);
 
-        if (return_code == 0) {
+        if (return_code == 0) [[unlikely]] {
             std::cout << "Closed connection\n";
             break;
         }
@@ -127,40 +119,30 @@ int CoreComponent::ProcessRequest(const char* request, int client_socket) {
     std::memcpy(&data.message_type, request, sizeof(uint32_t));
     data.message_type = OSSwapHostToBigInt32(data.message_type);
 
-    if (data.message_type == 0) {
-        for (auto currency : client_subscribe_list_[client_socket]) {
-            open_orderbooks_[currency]->remove_client(client_socket);
+    /*
+        Start streaming and collecting data for currency X
+    */
+    if (data.message_type == 1) {
+        std::memcpy(&data.currency_name, request + 4, sizeof(uint32_t));
+        data.currency_name = OSSwapHostToBigInt32(data.currency_name);
+
+        if (!open_orderbooks_.contains(data.currency_name)) {
+            AddWebsocketConnection(data.currency_name);
         }
     }
-    else if (data.message_type == 1) {
+    /*
+        Get the top N levels of currency X
+    */
+    else if (data.message_type == 2) {
         std::memcpy(&data.currency_name, request + 4, sizeof(uint32_t));
         data.currency_name = OSSwapHostToBigInt32(data.currency_name);
 
         std::memcpy(&data.num_levels, request + 8, sizeof(uint32_t));
         data.num_levels = OSSwapHostToBigInt32(data.num_levels);
         
-        if (!open_orderbooks_.contains(data.currency_name)) {
-            AddWebsocketConnection(data.currency_name);
+        if (open_orderbooks_.count(data.currency_name) != 0) {
+            open_orderbooks_[data.currency_name]->send_snapshot(client_socket, data.num_levels);
         }
-        
-        open_orderbooks_[data.currency_name]->add_client(client_socket);
-        client_subscribe_list_[client_socket].push_back(data.currency_name);
-    }
-    else if (data.message_type == 2) {
-        std::memcpy(&data.currency_name, request + 4, sizeof(uint32_t));
-        data.currency_name = OSSwapHostToBigInt32(data.currency_name);
-
-        for (auto currency : client_subscribe_list_[client_socket]) {
-            if (currency == data.currency_name) {
-                open_orderbooks_[currency]->remove_client(client_socket);
-            }
-        }
-
-        auto& subscriptions = client_subscribe_list_[client_socket];
-        subscriptions.erase(
-            std::remove(subscriptions.begin(), subscriptions.end(), data.currency_name),
-            subscriptions.end()
-        );
     }
 
     return data.message_type;
@@ -192,6 +174,9 @@ void CoreComponent::AddWebsocketConnection(uint32_t currency_id) {
     coinbase_thread.detach();
     
     
+    // Right now we're just working with Coinbase
+
+    /*
     auto crypto_thread_func = [this, currency_id, new_orderbook, mtx]() {
         std::string new_id = "crypto";
 
@@ -210,6 +195,7 @@ void CoreComponent::AddWebsocketConnection(uint32_t currency_id) {
 
     std::thread crypto_thread(crypto_thread_func);
     crypto_thread.detach();
+    */
 }
 
 

@@ -53,7 +53,7 @@ std::optional<std::string> Coinbase::ReturnRequest(const std::string &url) {
 }
 
 
-
+/*
 std::optional<BBO> Coinbase::ReturnBBO(const std::string &ticker) {
     std::string url = std::string("https://api.exchange.coinbase.com/products/") + ticker + std::string("/ticker");
 
@@ -141,6 +141,7 @@ std::optional<Orderbook_State> Coinbase::ReturnCurrentOrderbook(const std::strin
         return std::nullopt;
     }
 }
+*/
 
 std::optional<std::string> Coinbase::get_asset_name_conversion(const std::string &name) {
     if (asset_to_exchange_name_.count(name) != 0) {

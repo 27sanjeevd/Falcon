@@ -13,14 +13,11 @@ if __name__ == "__main__":
     connection = CryptoConnection()
     connection.connect()
 
-    connection.subscribe(crypto_symbol)
-    #connection.subscribe("DOGE")
+    connection.start_streaming(crypto_symbol)
 
-    time.sleep(2)
-    data = connection.parse(crypto_symbol)
-
-    #connection.unsubscribe("DOGE")
-    connection.unsubscribe(crypto_symbol)
+    for _ in range(10):
+        time.sleep(1)
+        data = connection.get_orderbook_data(crypto_symbol)
 
     time.sleep(5)
     connection.close()

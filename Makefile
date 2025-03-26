@@ -10,7 +10,8 @@ SOURCES = core.cpp \
           src/websockets/coinbase_ws.cpp \
           src/websockets/crypto_ws.cpp \
           src/websocket.cpp \
-          src/orderbook.cpp
+          src/orderbook.cpp \
+          src/positionmanager.cpp
 
 OBJECTS = $(patsubst %.cpp,build/%.o,$(SOURCES))
 DEPS = $(OBJECTS:.o=.d)

@@ -31,7 +31,6 @@ private:
     int server_fd_ = -1;
 
     std::unordered_map<uint32_t, std::shared_ptr<Orderbook>> open_orderbooks_;
-    std::unordered_map<int, std::vector<uint32_t>> client_subscribe_list_;
 
     std::unordered_map<uint32_t, std::string> exchange_id_to_name_;
     std::unordered_map<std::string, Exchange*> exchange_map_;
