@@ -23,11 +23,8 @@ private:
     static constexpr size_t MAX_LEVELS = 10000;
     static constexpr size_t TOP_LEVELS = 5;
 
-    std::vector<std::pair<Price, Volume>> bids;
-    std::vector<std::pair<Price, Volume>> asks;
-
-    std::map<double, double, std::greater<double>> bids_;
-    std::map<double, double> asks_;
+    std::vector<std::pair<Price, Volume>> bids_;
+    std::vector<std::pair<Price, Volume>> asks_;
 
     ExchangeOrderMap exchange_bids_;
     ExchangeOrderMap exchange_asks_;
@@ -35,15 +32,15 @@ private:
     uint32_t currency_id_;
 
     template <typename T>
-    void rebalance(T& orders_map);
+    void rebalance(T& orders_list);
 
-    template <typename T>
+    template <typename T, typename Compare>
     void update_level(const std::string& exchange_id, Price price, Volume new_volume,
-                    T& orders_map, ExchangeOrderMap& exchanges);
+                    T& orders_list, ExchangeOrderMap& exchanges, Compare comp);
 
-    template <typename T>
+    template <typename T, typename Compare>
     void delete_level(const std::string& exchange_id, Price price,
-                    T& orders_map, ExchangeOrderMap& exchanges);
+                    T& orders_list, ExchangeOrderMap& exchanges, Compare comp);
 
     double get_total_volume_at_price(Price price, 
                                 const ExchangeOrderMap& exchanges) const;
@@ -51,7 +48,7 @@ private:
     void ToNetworkOrder(double value, char* buffer);
 
     template <typename T, typename Compare>
-    bool IsInFirstNKeys(T& orders_map, Price price, Compare comp);
+    bool IsInFirstNKeys(T& orders_list, Price price, Compare comp);
 
 public:
     Orderbook(int currency_id);

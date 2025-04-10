@@ -4,42 +4,44 @@
 #include <libkern/OSByteOrder.h>
 
 template <typename T>
-void Orderbook::rebalance(T& orders_map) {
+void Orderbook::rebalance(T& orders_list) {
     
-    while (orders_map.size() > MAX_LEVELS) {
-        auto it = std::prev(orders_map.end());
-        orders_map.erase(it);
+    int size_difference = orders_list.size() - MAX_LEVELS;
+    if (size_difference > 0) {
+        orders_list.erase(orders_list.begin(), orders_list.begin() + size_difference);
     }
 }
 
-template <typename T>
+template <typename T, typename Compare>
 void Orderbook::update_level(const std::string& exchange_id, Price price, Volume new_volume,
-                    T& orders_map, ExchangeOrderMap& exchanges) {
-    
-    
+                    T& orders_list, ExchangeOrderMap& exchanges, Compare comp) {
+                
+
     if (new_volume > 0) {
         exchanges[exchange_id][price] = new_volume;
-    } 
+    }
     else {
-        delete_level(exchange_id, price, orders_map, exchanges);
+        delete_level(exchange_id, price, orders_list, exchanges, comp);
         return;
     }
 
     double total_volume = get_total_volume_at_price(price, exchanges);
+    auto it = std::lower_bound(orders_list.begin(), orders_list.end(), price,
+        comp);
 
-    if (total_volume > 0) {
-        orders_map[price] = total_volume;
-    } 
+    if (it != orders_list.end() && it->first == price) {
+        it->second = total_volume;
+    }
     else {
-        orders_map.erase(price);
+        orders_list.insert(it, {price, total_volume});
     }
 
-    rebalance(orders_map);
+    rebalance(orders_list);
 }
 
-template <typename T>
+template <typename T, typename Compare>
 void Orderbook::delete_level(const std::string& exchange_id, Price price,
-                    T& orders_map, ExchangeOrderMap& exchanges) {
+                    T& orders_list, ExchangeOrderMap& exchanges, Compare comp) {
     
     
     if (exchanges.count(exchange_id) != 0) {
@@ -47,12 +49,18 @@ void Orderbook::delete_level(const std::string& exchange_id, Price price,
     }
 
     double total_volume = get_total_volume_at_price(price, exchanges);
+    
+    auto it = std::lower_bound(orders_list.begin(), orders_list.end(), price, comp);
 
+    if (it == orders_list.end()) {
+        return;
+    }
+    
     if (total_volume > 0) {
-        orders_map[price] = total_volume;
-    } 
+        it->second = total_volume;
+    }
     else {
-        orders_map.erase(price);
+        orders_list.erase(it);
     }
 }
 
@@ -76,10 +84,9 @@ void Orderbook::send_snapshot(int client_socket, int n_levels) {
 
     uint32_t currency_id = currency_id_;
     uint32_t remainingSize = 32;
-    double bestBidPrice = bids_.begin()->first;
-    double bestBidVolume = bids_.begin()->second;
-    double bestAskPrice = asks_.begin()->first;
-    double bestAskVolume = asks_.begin()->second;
+
+    auto [bestBidPrice, bestBidVolume] = bids_.back();
+    auto [bestAskPrice, bestAskVolume] = asks_.back();
 
     currency_id = OSSwapHostToBigInt32(currency_id);
     std::memcpy(buffer, &currency_id, 4);
@@ -102,6 +109,7 @@ void Orderbook::ToNetworkOrder(double value, char* buffer) {
     std::memcpy(buffer, &raw, sizeof(raw));
 }
 
+/*
 template <typename T, typename Compare>
 bool Orderbook::IsInFirstNKeys(T& orders_map, Price price, Compare comp) {
     if (orders_map.size() < TOP_LEVELS) {
@@ -117,18 +125,21 @@ bool Orderbook::IsInFirstNKeys(T& orders_map, Price price, Compare comp) {
 
     return false;
 }
+*/
 
 Orderbook::Orderbook(int currency_id) : currency_id_(currency_id) {}
 
 
 void Orderbook::update_bid(const std::string &exchange_id, Price price, Volume new_volume) {
-    update_level(exchange_id, price, new_volume, bids_, exchange_bids_);
+    update_level(exchange_id, price, new_volume, bids_, exchange_bids_,
+        [](const std::pair<Price, Volume>& a, const Price& b) { return a.first < b; });
     //print_bbo();
     //send_snapshot();
 }
 
 void Orderbook::update_ask(const std::string &exchange_id, Price price, Volume new_volume) {
-    update_level(exchange_id, price, new_volume, asks_, exchange_asks_);
+    update_level(exchange_id, price, new_volume, asks_, exchange_asks_,
+        [](const std::pair<Price, Volume>& a, const Price& b) { return a.first > b; });
     //print_bbo();
     //send_snapshot();
 }

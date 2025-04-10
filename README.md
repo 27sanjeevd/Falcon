@@ -1,4 +1,4 @@
-# SIF Crypto Infrastructure
+# Falcon
 
 Manages the connections to crypto exchanges, and deals with everything related to receiving live market data and executing requested orders. The system contains a C++ Backend Component, and a Python Client Component. The client component is able to send requests to the backend through IPC Sockets.
 

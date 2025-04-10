@@ -9,6 +9,32 @@ Coinbase_WS::Coinbase_WS(std::shared_ptr<Orderbook> new_book, std::string &ws_id
     id_to_currency_[3] = "XRP-USD";
     id_to_currency_[4] = "SOL-USD";
     id_to_currency_[5] = "DOGE-USD";
+
+
+    /*
+        Code to initialize the csv writing
+    */
+    /*
+    csv_file_.open("data/coinbase_map.csv");
+    if (!csv_file_.is_open()) {
+        throw std::runtime_error("Failed to open the file: data/coinbase_map.csv");
+    }
+
+    std::vector<std::string> headers = {"Time"};
+    for (size_t i = 0; i < headers.size(); ++i) {
+        csv_file_ << headers[i];
+        if (i < headers.size() - 1) {
+            csv_file_ << ",";
+        }
+    }
+    csv_file_ << "\n";
+    */
+}
+
+Coinbase_WS::~Coinbase_WS() {
+    if (csv_file_.is_open()) {
+        csv_file_.close();
+    }
 }
 
 void Coinbase_WS::SubscribeToChannel(std::string &currency_name, std::string &channel_name) {
@@ -37,7 +63,8 @@ void Coinbase_WS::HandleMessage(const std::string_view& message) {
         auto doc = json_parser_.iterate(padded_message);
         auto events = doc["events"];
 
-        std::vector<std::tuple<std::string_view, double, double>> aggregated_updates;
+        std::vector<std::tuple<std::string_view, std::string_view, 
+            double, double>> aggregated_updates;
 
         for (auto event : events) {
             std::string_view type;
@@ -70,18 +97,30 @@ void Coinbase_WS::HandleMessage(const std::string_view& message) {
                     continue;
                 }
 
-                aggregated_updates.emplace_back(side, price, volume);
+                aggregated_updates.emplace_back(type, side, price, volume);
             }
         }
 
         {
             std::lock_guard<std::mutex> lock(*mutex_);
-            for (const auto& [side, price, volume] : aggregated_updates) {
+            for (const auto& [type, side, price, volume] : aggregated_updates) {
+                //auto start = std::chrono::high_resolution_clock::now();
+
                 if (side == "bid") {
                     curr_book_->update_bid(id_, price * (1 - fee_percentage_), volume);
-                } else {
+                } 
+                else {
                     curr_book_->update_ask(id_, price * (1 + fee_percentage_), volume);
                 }
+                
+                /*
+                if (type != "snapshot") {
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto time_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
+                    csv_file_ << time_diff << "\n";
+                }
+                */
             }
         }
     } 
