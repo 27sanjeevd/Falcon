@@ -29,7 +29,7 @@ private:
     std::string GetHost() const override;
 
     const std::string host_ = "advanced-trade-ws.coinbase.com";
-    const double fee_percentage_ = 0.002;
+    const double fee_percentage_ = 0;
 
     std::unordered_map<uint32_t, std::string> id_to_currency_;
 

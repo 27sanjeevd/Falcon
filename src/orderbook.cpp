@@ -55,7 +55,7 @@ void Orderbook::delete_level(const std::string& exchange_id, Price price,
     if (it == orders_list.end()) {
         return;
     }
-    
+
     if (total_volume > 0) {
         it->second = total_volume;
     }
@@ -108,24 +108,6 @@ void Orderbook::ToNetworkOrder(double value, char* buffer) {
     raw = OSSwapHostToBigInt64(raw);
     std::memcpy(buffer, &raw, sizeof(raw));
 }
-
-/*
-template <typename T, typename Compare>
-bool Orderbook::IsInFirstNKeys(T& orders_map, Price price, Compare comp) {
-    if (orders_map.size() < TOP_LEVELS) {
-        return true;
-    }
-
-    typename T::const_iterator it = orders_map.begin();
-    std::advance(it, TOP_LEVELS - 1);
-
-    if (comp(price, it->first)) {
-        return true;
-    }
-
-    return false;
-}
-*/
 
 Orderbook::Orderbook(int currency_id) : currency_id_(currency_id) {}
 

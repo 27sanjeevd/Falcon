@@ -1,4 +1,3 @@
-#include "include/coinbase.hpp"
 #include "include/corecomponent.hpp"
 
 #include <iostream>
@@ -6,38 +5,11 @@
 #include <concepts>
 #include <unordered_map>
 
-/*
-template <typename T>
-concept HasRequiredMethods = requires(T t, const std::string &url, const std::string &ticker, int max_levels, const std::string &asset_name) {
-    { t.ReturnRequest(url) } -> std::same_as<std::optional<std::string>>;
-    { t.ReturnBBO(ticker) } -> std::same_as<std::optional<BBO>>;
-    { t.ReturnLastTrade(ticker) } -> std::same_as<std::optional<Latest_Trade>>;
-    { t.ReturnCurrentOrderbook(ticker, max_levels) } -> std::same_as<std::optional<Orderbook_State>>;
-    { t.get_asset_name_conversion(asset_name) } -> std::same_as<std::optional<std::string>>;
-    { t.get_name() } -> std::same_as<std::string>;
-};
-*/
 
 int main() {
-    // Static assert all the connectivity classes
-    //static_assert(HasRequiredMethods<Coinbase>, "Coinbase does not satisfy the required methods");
     uint32_t exchange_counter = 0;
 
-    //Coinbase coinbase;
-
-    std::unordered_map<uint32_t, std::string> exchange_id_map;
-    std::unordered_map<std::string, Exchange*> exchange_ptr_map;
-    std::vector<std::string> exchange_list;
-
-    /*
-    exchange_id_map[exchange_counter++] = coinbase.get_name();
-    exchange_ptr_map[coinbase.get_name()] = &coinbase;
-    exchange_list.push_back(coinbase.get_name());
-    */
-
-
-    CoreComponent cc(std::move(exchange_id_map), std::move(exchange_ptr_map), 
-        std::move(exchange_list));
+    CoreComponent cc;
     cc.Run();
 
     return 0;

@@ -15,12 +15,6 @@
 
 static constexpr int kPort = 8080;
 
-CoreComponent::CoreComponent(std::unordered_map<uint32_t, std::string> &&id_map, 
-    std::unordered_map<std::string, Exchange*> &&ptr_map, std::vector<std::string> &&list) : 
-        exchange_id_to_name_(std::move(id_map)), exchange_map_(std::move(ptr_map)), exchange_list_(std::move(list)) {}
-
-
-
 void CoreComponent::Run() {
     std::thread listeningThread(&CoreComponent::ReceiveConnections, this);
 

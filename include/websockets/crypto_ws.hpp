@@ -31,7 +31,7 @@ private:
     const std::string host_ = "stream.crypto.com";
     const std::string target_ = "/exchange/v1/market";
 
-    const double fee_percentage_ = 0.0015;
+    const double fee_percentage_ = 0;
 
     std::unordered_map<uint32_t, std::string> id_to_currency_;
 };

@@ -4,7 +4,6 @@ LDFLAGS = -L/opt/homebrew/lib -L/opt/homebrew/opt/openssl/lib
 LDLIBS = -lssl -lcrypto -lboost_system -lboost_json -lcurl
 
 SOURCES = core.cpp \
-          src/coinbase.cpp \
           src/simdjson.cpp \
           src/corecomponent.cpp \
           src/websockets/coinbase_ws.cpp \
