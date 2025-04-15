@@ -1,10 +1,7 @@
 #include "../include/websocket.hpp"
 
 WebsocketConnection::WebsocketConnection(std::shared_ptr<Orderbook> new_book, std::string &ws_id,
-    std::shared_ptr<std::mutex> mutex) : curr_book_(new_book), id_(ws_id), mutex_(mutex) {
-
-    curr_book_->initialize_exchange(id_);
-}
+    std::shared_ptr<std::mutex> mutex) : curr_book_(new_book), id_(ws_id), mutex_(mutex) {}
 
 void WebsocketConnection::Initialize() {
     if (!SSL_set_tlsext_host_name(ws_.next_layer().native_handle(), GetHost().c_str())) {

@@ -166,30 +166,6 @@ void CoreComponent::AddWebsocketConnection(uint32_t currency_id) {
 
     std::thread coinbase_thread(coinbase_thread_func);
     coinbase_thread.detach();
-    
-    
-    // Right now we're just working with Coinbase
-
-    /*
-    auto crypto_thread_func = [this, currency_id, new_orderbook, mtx]() {
-        std::string new_id = "crypto";
-
-        Crypto_WS ws(new_orderbook, new_id, mtx);
-
-        auto currency_name = ws.GetCurrencyName(currency_id);
-        if (!currency_name) {
-            return;
-        }
-
-        std::string currency = *currency_name;
-        std::string channel = "SNAPSHOT_AND_UPDATE";
-
-        ws.Connect(currency, channel);
-    };
-
-    std::thread crypto_thread(crypto_thread_func);
-    crypto_thread.detach();
-    */
 }
 
 

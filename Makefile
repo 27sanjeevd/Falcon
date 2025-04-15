@@ -7,7 +7,6 @@ SOURCES = core.cpp \
           src/simdjson.cpp \
           src/corecomponent.cpp \
           src/websockets/coinbase_ws.cpp \
-          src/websockets/crypto_ws.cpp \
           src/websocket.cpp \
           src/orderbook.cpp \
           src/positionmanager.cpp

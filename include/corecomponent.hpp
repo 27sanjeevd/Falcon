@@ -6,7 +6,6 @@
 #include "data.hpp"
 #include "exchange.hpp"
 #include "websockets/coinbase_ws.hpp"
-#include "websockets/crypto_ws.hpp"
 
 #include <vector>
 #include <unordered_map>
