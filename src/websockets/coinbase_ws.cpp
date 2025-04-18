@@ -106,12 +106,7 @@ void Coinbase_WS::HandleMessage(const std::string_view& message) {
             for (const auto& [type, side, price, volume] : aggregated_updates) {
                 //auto start = std::chrono::high_resolution_clock::now();
 
-                if (side == "bid") {
-                    curr_book_->update_bid(id_, price * (1 - fee_percentage_), volume);
-                } 
-                else {
-                    curr_book_->update_ask(id_, price * (1 + fee_percentage_), volume);
-                }
+                update_handlers_[side[0]](id_, price, volume);
                 
                 /*
                 if (type != "snapshot") {

@@ -72,6 +72,9 @@ protected:
 
     std::shared_ptr<std::mutex> mutex_;
     std::string id_;
+
+    using UpdateHandler = std::function<void(const std::string&, Orderbook::Price, Orderbook::Volume)>;
+    std::unordered_map<char, UpdateHandler> update_handlers_;
 };
 
 #endif // WEBSOCKET_HPP
